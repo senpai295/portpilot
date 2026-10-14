@@ -1,0 +1,6 @@
+{
+  "ports": [
+    { "port": 3000, "service": " Frontend Service" },
+    { "port": 5050, "service": "Team Microservice Gateway" }
+  ]
+}

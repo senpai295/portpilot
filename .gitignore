@@ -1,0 +1,15 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.out
+
+# workspace files
+go.work
+*.code-workspace
+
+
+# IDE / Editor files
+.vscode/
+.idea/
+.DS_Store

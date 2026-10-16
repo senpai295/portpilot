@@ -1,0 +1,21 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "portpilot",
+  "outputfilename": "PortPilot",
+  "frontend:dir": "frontend",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "http://localhost:5173",
+  "author": {
+    "name": "Mohammed Ahmed",
+    "email": ""
+  },
+   "info": {
+    "productVersion": "0.1.0",
+    "companyName": "PortPilot",
+    "productName": "PortPilot",
+    "copyright": "Copyright (c) 2026 senpai295",
+    "comments": "Desktop port inspector and process manager"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "ports": [
+    { "port": 50355, "service": "GitHub Desktop (local)" },
+    { "port": 50006, "service": "VS Code Remote Server" }
+  ]
+}

@@ -73,7 +73,7 @@ func CheckPort(ctx context.Context, port int, timeout time.Duration) Result {
 		return Result{
 			Port:    port,
 			Status:  StatusAvailable,
-			Message: "Port is available (successfully bound locally)",
+			Message: fmt.Sprintf("Port (%d) is available (successfully bound locally)", port),
 		}
 	}
 
@@ -82,7 +82,7 @@ func CheckPort(ctx context.Context, port int, timeout time.Duration) Result {
 		return Result{
 			Port:    port,
 			Status:  StatusOccupied,
-			Message: "Port is occupied (bind failed: address already in use)",
+			Message: fmt.Sprintf("Port (%d) is occupied (bind failed: address already in use)", port),
 			Error:   listenErr,
 		}
 	}

@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"portpilot/internal/config"
-	"portpilot/internal/ports"
-	"portpilot/internal/process"
-	"portpilot/internal/report"
+	"github.com/senpai295/portpilot/internal/config"
+	"github.com/senpai295/portpilot/internal/ports"
+	"github.com/senpai295/portpilot/internal/process"
+	"github.com/senpai295/portpilot/internal/report"
 )
 
 func printUsage() {
@@ -452,8 +452,8 @@ func main() {
 	case "kill":
 		killCmd := flag.NewFlagSet("kill", flag.ExitOnError)
 		timeoutFlag := killCmd.Duration("timeout", 3*time.Second, "Termination timeout duration")
-		forceFlag := flag.Bool("force", false, "Skip confirmation prompt")
-		configFlag := flag.String("config", "", "Custom configuration file path")
+		forceFlag := killCmd.Bool("force", false, "Skip confirmation prompt")
+		configFlag := killCmd.String("config", "", "Custom configuration file path")
 
 		if err := killCmd.Parse(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)

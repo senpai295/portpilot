@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PortPilot</title>
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Listening ports">
+      <div class="sidebar-header">
+        <h2>Listening ports</h2>
+        <button id="refresh-ports" class="btn btn-ghost btn-sm" type="button">
+          Refresh
+        </button>
+      </div>
+      <label class="sr-only" for="port-search">Search listening ports</label>
+      <input id="port-search" class="search-input" type="search" placeholder="Search port, process, PID, service"
+        autocomplete="off" spellcheck="false" />
+      <p id="sidebar-status" class="muted" role="status"></p>
+      <ul id="port-list" class="port-list"></ul>
+    </aside>
+
+    <main class="app">
+      <header class="app-header">
+        <h1>PortPilot</h1>
+        <p class="subtitle">
+          Check whether a local TCP service accepts connections on 127.0.0.1.
+        </p>
+      </header>
+
+      <section class="card" aria-labelledby="scanner-title">
+        <h2 id="scanner-title">Port Scanner</h2>
+        <div class="form-row">
+          <div class="field">
+            <label for="port">TCP port</label>
+            <input id="port" type="number" inputmode="numeric" autocomplete="off" />
+            <span id="port-error" class="field-error" role="alert"></span>
+          </div>
+          <div class="field">
+            <label for="timeout">Timeout (ms)</label>
+            <input id="timeout" type="number" inputmode="numeric" autocomplete="off" />
+            <span id="timeout-error" class="field-error" role="alert"></span>
+          </div>
+          <button id="check" class="btn btn-primary btn-form" type="button">
+            <span id="check-label">Check port</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="result-title" aria-live="polite">
+        <div class="result-header">
+          <h2 id="result-title">Result</h2>
+          <div class="result-actions">
+            <span id="status-badge" class="badge" data-status="">&mdash;</span>
+            <button id="kill-btn" class="btn btn-danger btn-sm" type="button" hidden
+              aria-label="Terminate the process using this port">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                <line x1="10" x2="10" y1="11" y2="17" />
+                <line x1="14" x2="14" y1="11" y2="17" />
+              </svg>
+              <span>Kill</span>
+            </button>
+          </div>
+        </div>
+        <dl class="result-meta">
+          <dt>Port</dt>
+          <dd id="result-port">&mdash;</dd>
+          <dt>Service</dt>
+          <dd id="result-service">&mdash;</dd>
+        </dl>
+        <p id="message" class="result-message">Ready to check.</p>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="confirm-dialog" class="dialog" aria-labelledby="confirm-title">
+    <h2 id="confirm-title">Terminate process?</h2>
+    <p id="confirm-body" class="dialog-body"></p>
+    <div class="dialog-actions">
+      <button id="confirm-cancel" class="btn btn-ghost" type="button">
+        Cancel
+      </button>
+      <button id="confirm-ok" class="btn btn-danger" type="button">
+        Terminate
+      </button>
+    </div>
+  </dialog>
+
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+
+</html>

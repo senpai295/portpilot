@@ -13,24 +13,26 @@ jobs:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.24"
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Verify Dependencies (only if using modules)
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Verify Dependencies
         shell: bash
         run: |
           if [ -f go.mod ] && [ -s go.mod ]; then
-            echo "go.mod found; running go mod tidy"
             go mod tidy
+            # Fail if tidy changed go.mod or go.sum, so committed files stay in sync.
+            git diff --exit-code -- go.mod go.sum
           else
             echo "no go.mod or go.mod is empty; skipping module tidy"
           fi
@@ -38,7 +40,7 @@ jobs:
       - name: Check Formatting (gofmt)
         shell: bash
         run: |
-          unformatted=$(gofmt -s -l .)
+          unformatted=$(gofmt -s -l ./internal ./cmd/portpilot)
           if [ -n "$unformatted" ]; then
             echo "The following files are not formatted with gofmt:"
             echo "$unformatted"
@@ -46,10 +48,15 @@ jobs:
           fi
 
       - name: Run Static Analysis (go vet)
-        run: go vet ./...
+        run: go vet ./internal/... ./cmd/portpilot/...
+
+      - name: Run Tests (with race detector)
+        if: runner.os != 'Windows'
+        run: go test -v -race ./internal/... ./cmd/portpilot/...
 
       - name: Run Tests
-        run: go test -v -race ./...
+        if: runner.os == 'Windows'
+        run: go test -v ./internal/... ./cmd/portpilot/...
 
   release:
     name: Publish Release Binaries
@@ -85,7 +92,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.25"
 
       - name: Build Binary
         env:
@@ -96,7 +103,7 @@ jobs:
           if [ "${{ matrix.goos }}" = "windows" ]; then
             BINARY_NAME="${BINARY_NAME}.exe"
           fi
-          go build -ldflags="-s -w" -o "${BINARY_NAME}" cmd/portpilot/main.go
+          go build -ldflags="-s -w" -o "${BINARY_NAME}" ./cmd/portpilot
 
           # Package binaries
           if [ "${{ matrix.archive }}" = "zip" ]; then

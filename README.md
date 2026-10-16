@@ -4,9 +4,9 @@
 [![Go Version](https://img.shields.io/github/go-mod/go-version/senpai295/portpilot)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**PortPilot** is a lightweight, cross-platform command-line tool written in Go that helps developers identify occupied TCP ports, inspect listening processes, list active listening ports, troubleshoot port conflicts, and export audit reports.
+**PortPilot** is a lightweight, cross-platform tool written in Go that helps developers identify occupied TCP ports, inspect listening processes, list active listening ports, troubleshoot port conflicts, and export audit reports. It ships as a **command-line tool** and as a **desktop app** built with [Wails v2](https://wails.io).
 
-Designed with **zero third-party dependencies**, PortPilot combines concurrent port scanning, cross-platform process inspection, customizable service mappings, and automated testing in a simple developer-friendly CLI.
+Designed with **zero third-party dependencies** in the CLI, PortPilot combines concurrent port scanning, cross-platform process inspection, customizable service mappings, and automated testing in a simple developer-friendly interface.
 
 ## ✨ Features
 
@@ -17,15 +17,16 @@ Designed with **zero third-party dependencies**, PortPilot combines concurrent p
 - **Service Recognition:** Recognize common development services, databases, and infrastructure tools, including PostgreSQL, MySQL, MongoDB, Redis, Oracle, Microsoft SQL Server, Elasticsearch, and Kafka.
 - **Team-Shared Configuration:** Define custom service-to-port mappings in a `.portpilot.json` configuration file.
 - **Multiple Output Formats:** Display results in the terminal, produce JSON output, or export Markdown and JSON reports.
-- **Zero External Dependencies:** Built entirely with Go's standard library, including `net`, `os/exec`, `context`, and `sync`.
+- **Desktop App:** A graphical interface with a port scanner, a live listening-port sidebar, search, and a confirmed kill action. See the Desktop App section below.
+- **Zero External Dependencies (CLI):** The CLI is built entirely with Go's standard library, including `net`, `os/exec`, `context`, and `sync`.
 
 ## 🖥️ Platform Support
 
-| Operating System | Inspection Utilities   | Status    |
-| ---------------- | ---------------------- | --------- |
-| Linux            | `ss` / `lsof`          | Supported |
-| macOS            | `lsof`                 | Supported |
-| Windows          | `netstat` / `tasklist` | Supported |
+| Operating System | Inspection Utilities   | CLI       | Desktop App     |
+| ---------------- | ---------------------- | --------- | --------------- |
+| Linux            | `ss` / `lsof`          | Supported | Supported       |
+| macOS            | `lsof`                 | Supported | Not yet tested  |
+| Windows 11       | `netstat` / `tasklist` | Supported | Supported       |
 
 > **Note:** Process inspection depends on the availability of system utilities and the current user's permissions. PortPilot cannot always identify a process when access is restricted or the required utilities are unavailable.
 
@@ -33,8 +34,19 @@ Designed with **zero third-party dependencies**, PortPilot combines concurrent p
 
 ### Prerequisites
 
-- Go 1.22 or later
+- Go 1.25 or later
 - Git
+
+### Install with Go
+
+Install the CLI directly from the module proxy:
+
+```bash
+go install github.com/senpai295/portpilot/cmd/portpilot@latest
+portpilot --help
+```
+
+> **Note:** `go install` requires Go 1.25 or later. `@latest` installs the newest tagged release.
 
 ### Build from Source
 
@@ -53,13 +65,7 @@ Run the compiled binary:
 ./bin/portpilot --help
 ```
 
-To make `portpilot` available globally, move the binary into a directory on your `PATH`, or install it into your Go binary directory:
-
-```bash
-go install github.com/senpai295/portpilot/cmd/portpilot@latest
-```
-
-> **Note:** The `go install` command requires the repository to be available as a Go-installable module with the expected package layout.
+To make `portpilot` available globally, move the binary into a directory on your `PATH`.
 
 ## 🛠️ Usage
 
@@ -119,6 +125,65 @@ portpilot scan --start 5400 --end 6400 --output database_ports.json
 ```
 
 > These examples assume the CLI flags and output formats are supported by your current implementation.
+
+## 🖥️ Desktop App
+
+PortPilot's desktop app provides the same port checking and process logic as the CLI, in a graphical window. It's built with [Wails v2](https://wails.io), using a Go backend and a TypeScript frontend.
+
+![PortPilot desktop app showing the port scanner and listening-port sidebar](docs/screenshots/desktop-scanner.png)
+
+### Features
+
+- **Port Scanner:** Check any TCP port from 1 to 65535, with a configurable timeout. Results show Available, Occupied, or Error.
+- **Live Listening-Port Sidebar:** Lists active TCP listeners and refreshes automatically when the set changes.
+- **Search:** Filter the sidebar by port number, protocol, service name, PID, or process name. Press Escape to clear the search.
+- **Service Labels:** Shows a known service name for well-known ports, plus custom labels from `.portpilot.json`. Service names are guesses based on the port number, so compare them with the process name.
+- **Kill with Confirmation:** Terminate the process on an occupied port. The app shows the process name and PID first, and terminates only that PID if it still owns the port.
+
+### Running the Desktop App
+
+Requirements:
+
+- [Go](https://go.dev/dl/) 1.25 or later
+- [Node.js](https://nodejs.org/) 18 or later
+- The [Wails CLI](https://wails.io/docs/gettingstarted/installation)
+- **Linux only:** GTK 3 and WebKit2GTK development packages. Run `wails doctor` to see which packages are missing for your distribution.
+
+```bash
+cd cmd/portpilot-desktop
+
+# Install frontend dependencies and build the UI
+cd frontend && npm install && npm run build && cd ..
+
+# Development mode with hot reload
+wails dev
+
+# Production build
+wails build
+```
+
+The desktop app is built from the same repository as the CLI, but `go install` installs only the CLI. Building the desktop app requires the Wails CLI and the frontend steps above.
+
+### Custom Service Labels
+
+The desktop app reads `.portpilot.json` from the directory you run it from. Use the same format as the CLI:
+
+```json
+{
+  "ports": [
+    { "port": 4000, "service": "Custom Team API Gateway" }
+  ]
+}
+```
+
+Custom labels load when the app starts, so restart the app after editing the file.
+
+### Platform Notes
+
+- The desktop app has been tested on **Windows 11** and **Linux**. It has **not** been tested on macOS.
+- On Windows, process names are resolved with `tasklist`. On Linux, process inspection uses `ss` or `lsof`. Processes owned by other users or by the system may appear as unverified on either platform.
+- Port matching is exact. A search for port `3000` does not match `30000`.
+- Terminating a process may require administrator rights (Windows) or root privileges (Linux), depending on who owns it.
 
 ## ⚙️ Team Configuration
 
@@ -210,7 +275,7 @@ echo "Port cleanup command completed."
 
 PortPilot's JSON output makes it easy to integrate port inspection and scanning into shell scripts, CI pipelines, and developer workflows. Combine it with tools like [`jq`](https://jqlang.github.io/jq/) to filter results and automate routine tasks.
 
-> **Prerequisites:** Install `jq` and ensure `portpilot` is available on your `PATH`. The examples below assume the documented JSON fields match your CLI's actual output schema.
+> **Prerequisites:** Install `jq` and ensure `portpilot` is available on your `PATH`. The examples below use lowercase JSON field names such as `pid` and `service`. Check your output with `portpilot inspect 8080 --format json` if a filter returns nothing.
 
 #### 1. Check Port Availability in Bash
 
@@ -294,32 +359,50 @@ PortPilot includes unit tests for its core components. Tests can use ephemeral l
 Run the complete test suite:
 
 ```bash
-go test -v ./...
+go test -v ./internal/... ./cmd/portpilot/...
 ```
 
 Run the tests with the Go race detector:
 
 ```bash
-go test -race ./...
+go test -race ./internal/... ./cmd/portpilot/...
 ```
 
 Run static analysis:
 
 ```bash
-go vet ./...
+go vet ./internal/... ./cmd/portpilot/...
 ```
+
+> The desktop app (`cmd/portpilot-desktop`) is excluded from these commands because it embeds the built frontend. Build the frontend first (see [Running the Desktop App](#running-the-desktop-app)) before running `go test ./...`.
 
 ## 🏗️ Project Structure
 
 ```text
 portpilot/
 ├── cmd/
-│   └── portpilot/
-│       └── main.go
+│   ├── portpilot/
+│   │   └── main.go
+│   └── portpilot-desktop/
+│       ├── main.go
+│       ├── wails.json
+│       └── frontend/
+│           ├── index.html
+│           ├── package.json
+│           ├── tsconfig.json
+│           ├── vite.config.ts
+│           └── src/
+│               ├── main.ts
+│               └── style.css
+├── docs/
+│   └── screenshots/
+│       └── desktop-scanner.png
 ├── internal/
 │   ├── config/
 │   │   ├── config.go
 │   │   └── config_test.go
+│   ├── desktop/
+│   │   └── app.go
 │   ├── ports/
 │   │   ├── checker.go
 │   │   ├── checker_test.go
@@ -339,7 +422,9 @@ portpilot/
 ```
 
 - `cmd/portpilot/` — CLI entry point and command orchestration.
+- `cmd/portpilot-desktop/` — Wails desktop app entry point, configuration, and frontend.
 - `internal/config/` — Configuration loading and validation.
+- `internal/desktop/` — Go methods bound to the desktop frontend.
 - `internal/ports/` — Port checking, scanning, and service mappings.
 - `internal/process/` — Platform-specific process inspection.
 - `internal/report/` — JSON and Markdown report generation.
@@ -352,6 +437,8 @@ portpilot/
 - [x] **Automation & Scripting:** Uniform JSON output formatting across all commands for `jq` and CI/CD pipelines.
 - [x] **Active Port Listing & Real-Time Watching:** System-wide listing (`portpilot list`) and live monitoring (`portpilot watch`).
 - [x] **IoT & Consumer Device Port Recognition:** Curated database mappings for smart home hubs, Wi-Fi cameras, and streaming devices.
+- [x] **Desktop App (Windows and Linux):** Wails-based GUI with port scanning, a live listening-port sidebar, search, and confirmed process termination.
+- [ ] **Desktop App (macOS):** Test and verify builds on macOS.
 - [ ] **Embedded Web Dashboard:** Lightweight local web UI (`portpilot web`) for visual port monitoring.
 - [ ] **Remote Host Scanning:** Scan remote server IP addresses with secure tunneling integration.
 - [ ] **Configurable Alerting Webhooks:** Trigger Discord/Slack notifications when critical database or IoT ports drop or experience conflicts.
@@ -365,7 +452,7 @@ Contributions, bug reports, and feature requests are welcome.
 1. Fork the repository.
 2. Create a feature branch.
 3. Make your changes and add tests.
-4. Run `go test ./...` and `go vet ./...`.
+4. Run `go test ./internal/... ./cmd/portpilot/...` and `go vet ./internal/... ./cmd/portpilot/...`.
 5. Open a pull request describing your changes.
 
 Please keep changes focused, well-tested, and consistent with idiomatic Go practices.

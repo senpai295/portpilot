@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// KnownServices maps common development and database ports to their descriptions.
 // KnownServices maps common development, database, caching, and infrastructure ports to their descriptions.
 var KnownServices = map[int]string{
 	// Frontend & Web Development
@@ -50,6 +49,16 @@ var KnownServices = map[int]string{
 	8008: "Google Chromecast / Cast Device",
 	8009: "Chromecast DIAL Protocol",
 	8081: "Smart Home Hub / Alternate HTTP",
+
+	// others
+	8085: "Home Assistant / Smart Home Hub",
+	8086: "InfluxDB Time Series Database",
+	9000: "SonarQube / Code Quality Analysis",
+	9090: "Prometheus Monitoring / Metrics",
+	5939: "TeamViewer Remote Access",
+
+	// PortPilot & Development Tools
+	34115: "PortPilot CLI / API (Local HTTP)",
 }
 
 // GetKnownService returns the description for a port if it matches a well-known convention.

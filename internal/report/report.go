@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"portpilot/internal/ports"
-	"portpilot/internal/process"
+	"github.com/senpai295/portpilot/internal/ports"
+	"github.com/senpai295/portpilot/internal/process"
 )
 
 // Item represents a complete inspection entry for a single port.

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"portpilot/internal/ports"
-	"portpilot/internal/process"
+	"github.com/senpai295/portpilot/internal/ports"
+	"github.com/senpai295/portpilot/internal/process"
 )
 
 // TestProcessInspectionIntegration verifies that a locally bound ephemeral port

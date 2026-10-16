@@ -1,6 +1,6 @@
 {
   "ports": [
-    { "port": 3000, "service": " Frontend Service" },
-    { "port": 5050, "service": "Team Microservice Gateway" }
+    { "port": 50355, "service": "GitHub Desktop (local)" },
+    { "port": 50006, "service": "VS Code Remote Server" }
   ]
 }

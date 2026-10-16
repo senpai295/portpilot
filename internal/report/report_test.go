@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"portpilot/internal/ports"
-	"portpilot/internal/process"
+	"github.com/senpai295/portpilot/internal/ports"
+	"github.com/senpai295/portpilot/internal/process"
 )
 
 func TestReportJSONSerialization(t *testing.T) {

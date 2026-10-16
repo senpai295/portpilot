@@ -1,0 +1,115 @@
+name: Desktop Build & Release
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Desktop (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows/amd64
+            tags: ""
+            artifact: PortPilot-windows-amd64
+          - os: ubuntu-latest
+            platform: linux/amd64
+            tags: webkit2_41
+            artifact: PortPilot-linux-amd64
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0
+
+      - name: Check Wails environment
+        shell: bash
+        run: |
+          # Print the environment report. Does not fail the build on warnings.
+          wails doctor || true
+
+      - name: Build desktop app
+        shell: bash
+        working-directory: cmd/portpilot-desktop
+        run: |
+          # wails.json runs "npm install" and "npm run build" in frontend/
+          # automatically before compiling the Go code.
+          ARGS=(-platform "${{ matrix.platform }}" -clean)
+          if [ -n "${{ matrix.tags }}" ]; then
+            ARGS+=(-tags "${{ matrix.tags }}")
+          fi
+          wails build "${ARGS[@]}"
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: cmd/portpilot-desktop/build/bin/*
+          if-no-files-found: error
+
+  release:
+    name: Publish Desktop Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build outputs
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Package executables
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+
+          # Windows: zip the .exe with a clear name.
+          mv PortPilot-windows-amd64/PortPilot.exe portpilot-desktop-windows-amd64.exe
+          zip portpilot-desktop-windows-amd64.zip portpilot-desktop-windows-amd64.exe
+
+          # Linux: tar.gz keeps the executable bit.
+          chmod +x PortPilot-linux-amd64/PortPilot
+          cp PortPilot-linux-amd64/PortPilot portpilot-desktop-linux-amd64
+          tar -czf portpilot-desktop-linux-amd64.tar.gz portpilot-desktop-linux-amd64
+
+          ls -la
+
+      - name: Upload to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/portpilot-desktop-windows-amd64.zip
+            dist/portpilot-desktop-linux-amd64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

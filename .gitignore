@@ -1,13 +1,18 @@
 # Binaries
 /bin/
-/dist/
 *.exe
 *.out
+
+# Wails desktop build output 
+cmd/portpilot-desktop/build/bin/
+
+# Frontend dependencies and generated output
+node_modules/
+dist/
 
 # workspace files
 go.work
 *.code-workspace
-
 
 # IDE / Editor files
 .vscode/

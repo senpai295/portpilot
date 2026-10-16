@@ -55,6 +55,14 @@ jobs:
           # Print the environment report. Does not fail the build on warnings.
           wails doctor || true
 
+      - name: Install frontend dependencies
+        working-directory: cmd/portpilot-desktop/frontend
+        run: |
+          # Clean install from package-lock.json. Avoids stale node_modules
+          # (for example, ones copied from Windows) that lose execute bits.
+          npm ci
+          chmod +x node_modules/.bin/* || true
+
       - name: Build desktop app
         shell: bash
         working-directory: cmd/portpilot-desktop
@@ -94,9 +102,8 @@ jobs:
           set -euo pipefail
           cd dist
 
-          # Windows: zip the .exe with a clear name.
+          # Windows: publish the .exe directly.
           mv PortPilot-windows-amd64/PortPilot.exe portpilot-desktop-windows-amd64.exe
-          zip portpilot-desktop-windows-amd64.zip portpilot-desktop-windows-amd64.exe
 
           # Linux: tar.gz keeps the executable bit.
           chmod +x PortPilot-linux-amd64/PortPilot
@@ -109,7 +116,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/portpilot-desktop-windows-amd64.zip
+            dist/portpilot-desktop-windows-amd64.exe
             dist/portpilot-desktop-linux-amd64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

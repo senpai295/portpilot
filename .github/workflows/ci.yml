@@ -1,10 +1,8 @@
-name: CI & Release
+name: CI
 
 on:
   push:
     branches: [main, master]
-    tags:
-      - "v*"
   pull_request:
     branches: [main, master]
 
@@ -57,66 +55,3 @@ jobs:
       - name: Run Tests
         if: runner.os == 'Windows'
         run: go test -v ./internal/... ./cmd/portpilot/...
-
-  release:
-    name: Publish Release Binaries
-    needs: test
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    strategy:
-      matrix:
-        include:
-          - goos: linux
-            goarch: amd64
-            archive: tar.gz
-          - goos: linux
-            goarch: arm64
-            archive: tar.gz
-          - goos: darwin
-            goarch: amd64
-            archive: tar.gz
-          - goos: darwin
-            goarch: arm64
-            archive: tar.gz
-          - goos: windows
-            goarch: amd64
-            archive: zip
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.25"
-
-      - name: Build Binary
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-        run: |
-          BINARY_NAME=portpilot-${{ matrix.goos }}-${{ matrix.goarch }}
-          if [ "${{ matrix.goos }}" = "windows" ]; then
-            BINARY_NAME="${BINARY_NAME}.exe"
-          fi
-          go build -ldflags="-s -w" -o "${BINARY_NAME}" ./cmd/portpilot
-
-          # Package binaries
-          if [ "${{ matrix.archive }}" = "zip" ]; then
-            zip "${BINARY_NAME}.zip" "${BINARY_NAME}"
-            echo "ASSET_FILE=${BINARY_NAME}.zip" >> $GITHUB_ENV
-          else
-            tar -czvf "${BINARY_NAME}.tar.gz" "${BINARY_NAME}"
-            echo "ASSET_FILE=${BINARY_NAME}.tar.gz" >> $GITHUB_ENV
-          fi
-
-      - name: Release and Upload Assets
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ env.ASSET_FILE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

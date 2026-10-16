@@ -1,8 +1,18 @@
 # Changelog
 
 All notable changes to this project are documented in this file.
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project uses [Semantic Versioning](https://semver.org/).
+
+## [0.2.2] - 2026-10-16
+
+### Changed
+- Repository: frontend build output (`cmd/portpilot-desktop/frontend/dist/`) is no longer tracked by git. The desktop build regenerates it.
+- Repository: frontend dependencies (`cmd/portpilot-desktop/frontend/node_modules/`) are no longer tracked by git. Install them with `npm ci`.
+- `.gitignore`: ignores `node_modules/` and `dist/` at any depth, and the Wails build output in `cmd/portpilot-desktop/build/bin/`. App icons and Windows resources in `build/` stay tracked.
+
+### Fixed
+- Desktop CI: Windows build is published as portpilot-desktop-windows-amd64.exe
+  (no zip wrapper); Linux is published as .tar.gz to keep the exec bit
+
 
 ### Added [0.2.1]
 CI and release:

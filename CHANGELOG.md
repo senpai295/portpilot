@@ -4,7 +4,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] - 2026-10-16
+### Added [0.2.1]
+CI and release:
+- Add desktop.yml: builds the Wails app for Windows and Linux on
+  every push and PR; attaches packaged executables to v* releases
+
+## [0.2.0] - 2026-10-16
 
 ### Added
 - Desktop app built with Wails v2: port scanner, live listening-port sidebar, search, and confirmed process termination.
